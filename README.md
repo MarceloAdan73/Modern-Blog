@@ -56,15 +56,37 @@ modern-blog/
 
 
 ## 🚀 Development Journey
-**Current Work:** We are in the process of integrating GraphQL with the frontend. Check out the `dev` branch for:
-- Completed GraphQL API backend implementation
-- Ongoing work to update frontend components to consume GraphQL
-- Documentation on the GraphQL endpoint usage
+**Current Work:** We are implementing a GraphQL API layer alongside the existing REST API to evaluate performance and flexibility benefits for frontend consumption.
 
-The `main` branch contains the stable REST-only version currently deployed to production.
+### Technical Implementation Overview
 
-**Development Milestones:**
-**AI-Human Collaboration:** This project was developed through iterative AI assistance combined with human oversight for architecture decisions, code review, and deployment.
+**Backend (dev branch):**
+- Added `strawberry-graphql>=0.312.0` to requirements.txt
+- Created `graphql_schema.py` with Strawberry schema definition including:
+  - Query types: `posts` (all posts), `published_posts` (filtered posts)
+  - Mutation types: `create_post`, `update_post`, `delete_post`
+  - Object types: `PostType`, `UserType` with proper field resolvers
+  - Input types: `PostInput`, `PostUpdateInput` for mutation arguments
+- Integrated GraphQL router in `main.py`:
+  ```python
+  from strawberry.fastapi import GraphQLRouter
+  from graphql_schema import schema
+  # ...
+  graphql_app = GraphQLRouter(schema)
+  app.include_router(graphql_app, prefix="/graphql")
+  ```
+- Maintained full compatibility with existing REST endpoints
+- Added proper database session handling in GraphQL resolvers
+- Implemented tag parsing utilities for JSON-stringified tags in PostgreSQL
+
+**Frontend (planned):**
+- Migration from REST API consumption to GraphQL queries using `fetch` or Apollo Client
+- Component updates to leverage GraphQL's declarative data fetching
+- Potential performance improvements through selective field querying
+
+**Branches:**
+- **main**: Stable production branch with REST API only (currently deployed)
+- **dev**: Development branch with complete GraphQL backend implementation
 
 **Development Milestones:**
 1. Architecture design and technology selection
@@ -73,6 +95,8 @@ The `main` branch contains the stable REST-only version currently deployed to pr
 4. Authentication system implementation
 5. Frontend integration with responsive design
 6. Render.com deployment configuration
+7. GraphQL API implementation (backend only) - *in dev branch*
+8. Testing and documentation
 
 ## 📦 API Endpoints
 **Authentication:**
