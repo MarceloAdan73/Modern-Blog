@@ -56,6 +56,14 @@ modern-blog/
 
 
 ## 🚀 Development Journey
+**Current Work:** We are in the process of integrating GraphQL with the frontend. Check out the `dev` branch for:
+- Completed GraphQL API backend implementation
+- Ongoing work to update frontend components to consume GraphQL
+- Documentation on the GraphQL endpoint usage
+
+The `main` branch contains the stable REST-only version currently deployed to production.
+
+**Development Milestones:**
 **AI-Human Collaboration:** This project was developed through iterative AI assistance combined with human oversight for architecture decisions, code review, and deployment.
 
 **Development Milestones:**
