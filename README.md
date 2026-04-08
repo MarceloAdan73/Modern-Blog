@@ -1,8 +1,8 @@
-# 🚀 Modern CMS & Blog Platform
+# 🚀 Modern Blog Platform
 
 > **Developed with AI Assistance** 🤖 + **Human Expertise** 👨‍💻
 
-A robust, full-stack blogging and Content Management System (CMS) application built using the high-performance **FastAPI** framework for the backend and a modern UI/UX approach. This project exemplifies effective human-AI collaboration in software development.
+A blogging application built using the **FastAPI** framework for the backend and a modern UI/UX approach.
 
 ---
 
@@ -15,11 +15,7 @@ Explore the live application and see the system's key interfaces:
 
 ### Application Screenshots
 
-*The CMS user interface showing the main feed, dashboard, and content management tools.*
-
 ![Modern Blog Application](static/images/screenshot1.png)
-
-
 
 ![Post Management Interface](static/images/screenshot2.png)
 
@@ -33,13 +29,13 @@ Explore the live application and see the system's key interfaces:
 | **Backend Framework** | Python 3.11, **FastAPI 0.100.0** | High-performance API and business logic. |
 | **Database/ORM** | **SQLAlchemy 1.4.46**, PostgreSQL | Object-Relational Mapping and data persistence. |
 | **Frontend** | HTML5, CSS3, **JavaScript** (Modern UI/UX) | User Interface design and interactivity. |
-| **Security** | Werkzeug 2.3.7, BCrypt, CORS | Password hashing and secure connection management. |
+| **Security** | Werkzeug 2.3.7 | Password hashing and secure connection management. |
 | **Deployment** | Render.com, GitHub, PostgreSQL | Continuous integration and production environment. |
 
 ### 📈 Performance & Security
 * ⚡ **FastAPI:** Utilized for high-performance and asynchronous (async) operations.
 * 🗃️ **SQLAlchemy:** Ensures efficient and reliable database interactions.
-* 🔒 **Werkzeug Security:** Implements robust password hashing for user data protection.
+* 🔒 **Werkzeug:** Implements password hashing for user data protection.
 * 📱 **Responsive Design:** Optimized for seamless viewing and interaction across all devices.
 
 ## 🏗 Project Architecture
@@ -51,42 +47,12 @@ modern-blog/
 ├── templates/ # HTML templates
 ├── static/ # CSS, JS, assets
 ├── requirements.txt # Dependencies
-├── build.sh # Render deployment
 └── runtime.txt # Python version
 
 
 ## 🚀 Development Journey
-**Current Work:** We are implementing a GraphQL API layer alongside the existing REST API to evaluate performance and flexibility benefits for frontend consumption.
 
-### Technical Implementation Overview
-
-**Backend (dev branch):**
-- Added `strawberry-graphql>=0.312.0` to requirements.txt
-- Created `graphql_schema.py` with Strawberry schema definition including:
-  - Query types: `posts` (all posts), `published_posts` (filtered posts)
-  - Mutation types: `create_post`, `update_post`, `delete_post`
-  - Object types: `PostType`, `UserType` with proper field resolvers
-  - Input types: `PostInput`, `PostUpdateInput` for mutation arguments
-- Integrated GraphQL router in `main.py`:
-  ```python
-  from strawberry.fastapi import GraphQLRouter
-  from graphql_schema import schema
-  # ...
-  graphql_app = GraphQLRouter(schema)
-  app.include_router(graphql_app, prefix="/graphql")
-  ```
-- Maintained full compatibility with existing REST endpoints
-- Added proper database session handling in GraphQL resolvers
-- Implemented tag parsing utilities for JSON-stringified tags in PostgreSQL
-
-**Frontend (planned):**
-- Migration from REST API consumption to GraphQL queries using `fetch` or Apollo Client
-- Component updates to leverage GraphQL's declarative data fetching
-- Potential performance improvements through selective field querying
-
-**Branches:**
-- **main**: Stable production branch with REST API only (currently deployed)
-- **dev**: Development branch with complete GraphQL backend implementation
+**Current Status:** The application implements a REST API with user authentication, post management, and analytics features.
 
 **Development Milestones:**
 1. Architecture design and technology selection
@@ -95,8 +61,7 @@ modern-blog/
 4. Authentication system implementation
 5. Frontend integration with responsive design
 6. Render.com deployment configuration
-7. GraphQL API implementation (backend only) - *in dev branch*
-8. Testing and documentation
+7. Testing and documentation
 
 ## 📦 API Endpoints
 **Authentication:**
@@ -125,8 +90,6 @@ Auto-deploy from GitHub main branch
 Managed PostgreSQL database
 
 Python 3.11 runtime
-
-Build Command: ./build.sh
 
 Start Command: python main.py
 
