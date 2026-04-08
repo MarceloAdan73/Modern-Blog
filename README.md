@@ -2,118 +2,188 @@
 
 > **Developed with AI Assistance** 🤖 + **Human Expertise** 👨‍💻
 
-A blogging application built using the **FastAPI** framework for the backend and a modern UI/UX approach.
+A full-stack blogging platform built with **FastAPI** for the backend and **Vue 3** for a modern reactive frontend, featuring a stunning glassmorphism UI with dark/light theme support.
 
 ---
 
-## 🌐 Live Application & Key Views
+## 🌐 Live Application
 
-Explore the live application and see the system's key interfaces:
-
-**🔗 Live URL:** [https://modern-blog-tkzl.onrender.com/](https://modern-blog-tkzl.onrender.com/)
-**📚 API Documentation:** [https://modern-blog-tkzl.onrender.com/docs](https://modern-blog-tkzl.onrender.com/docs)
+**🔗 Live URL:** [https://modern-blog-tkzl.onrender.com/](https://modern-blog-tkzl.onrender.com/)  
+**📚 API Documentation (Swagger):** [https://modern-blog-tkzl.onrender.com/docs](https://modern-blog-tkzl.onrender.com/docs)  
+**🔷 GraphQL Playground:** [https://modern-blog-tkzl.onrender.com/graphql](https://modern-blog-tkzl.onrender.com/graphql)
 
 ### Application Screenshots
 
-![Modern Blog Application](static/images/screenshot1.png)
+![Modern Blog - Dark Theme](static/images/screenshot1.png)
 
 ![Post Management Interface](static/images/screenshot2.png)
 
 ---
 
-## ✨ Key Features & Technology Stack
+## ✨ Key Features
 
-### 🛠 Technology Stack
-| Component | Technology | Role |
-| :--- | :--- | :--- |
-| **Backend Framework** | Python 3.11, **FastAPI 0.100.0** | High-performance API and business logic. |
-| **Database/ORM** | **SQLAlchemy 1.4.46**, PostgreSQL | Object-Relational Mapping and data persistence. |
-| **Frontend** | HTML5, CSS3, **JavaScript** (Modern UI/UX) | User Interface design and interactivity. |
-| **Security** | Werkzeug 2.3.7 | Password hashing and secure connection management. |
-| **Deployment** | Render.com, GitHub, PostgreSQL | Continuous integration and production environment. |
+### Core Functionality
+- **🔐 User Authentication** - Register, login, profile management
+- **📝 Post Management** - Create, read, update, delete posts with status workflow (Published, Draft, Review, Archived)
+- **🏷️ Tag System** - Organize posts with up to 5 tags each
+- **📊 Dashboard Analytics** - Platform and user statistics
+- **🔍 Real-time Search** - Instant search with autocomplete and result highlighting
 
-### 📈 Performance & Security
-* ⚡ **FastAPI:** Utilized for high-performance and asynchronous (async) operations.
-* 🗃️ **SQLAlchemy:** Ensures efficient and reliable database interactions.
-* 🔒 **Werkzeug:** Implements password hashing for user data protection.
-* 📱 **Responsive Design:** Optimized for seamless viewing and interaction across all devices.
+### API & Backend
+- **REST API** - Full CRUD operations with FastAPI
+- **GraphQL API** - Alternative query interface with Strawberry
+- **PostgreSQL/SQLite** - Seamless database switching (dev to prod)
+- **Swagger Documentation** - Auto-generated API docs
 
-## 🏗 Project Architecture
+### Frontend & UX
+- **🌙🌞 Dark/Light Theme** - Persistent theme toggle with localStorage
+- **✨ Glassmorphism UI** - Modern frosted glass aesthetic with backdrop blur
+- **🎨 Gradient Backgrounds** - Animated particle effects
+- **📱 Fully Responsive** - Optimized for desktop, tablet, and mobile
+- **🔔 Toast Notifications** - Non-intrusive feedback system
+- **⬆️ Scroll to Top** - Floating navigation button
 
+---
+
+## 🛠 Technology Stack
+
+### Backend
+| Component | Technology | Version |
+|-----------|------------|---------|
+| Framework | FastAPI | 0.100.0 |
+| ORM | SQLAlchemy | 1.4.46 |
+| Server | Uvicorn | 0.23.2 |
+| GraphQL | Strawberry | - |
+| Validation | Pydantic | (bundled) |
+| Security | Werkzeug | 2.3.7 |
+| Runtime | Python | 3.11.9 |
+
+### Frontend
+| Component | Technology | Version |
+|-----------|------------|---------|
+| Framework | Vue 3 (CDN) | Composition API |
+| Styling | Tailwind CSS | 3.3.0 |
+| Icons | Font Awesome | 6.0.0 |
+| Fonts | Google Fonts | Oswald + Poppins |
+
+### Database
+| Environment | Engine | Notes |
+|-------------|--------|-------|
+| Development | SQLite | Local `blog.db` |
+| Production | PostgreSQL | Render.com managed |
+
+---
+
+## 🏗 Project Structure
+
+```
 modern-blog/
-├── main.py # FastAPI application
-├── database.py # Database configuration
-├── models/ # SQLAlchemy models & schemas
-├── templates/ # HTML templates
-├── static/ # CSS, JS, assets
-├── requirements.txt # Dependencies
-└── runtime.txt # Python version
+├── main.py              # FastAPI application entry point
+├── database.py          # Database configuration
+├── graphql_schema.py    # Strawberry GraphQL schema
+├── requirements.txt     # Python dependencies
+├── runtime.txt          # Python version (3.11.9)
+├── .env                 # Environment variables
+├── models/
+│   ├── models.py        # SQLAlchemy models (User, Post)
+│   └── schemas.py       # Pydantic schemas
+├── templates/
+│   └── index.html       # Single Page Application (Vue 3)
+└── static/
+    ├── favicon.ico
+    └── images/          # Screenshots and assets
+```
 
-
-## 🚀 Development Journey
-
-**Current Status:** The application implements a REST API with user authentication, post management, and analytics features.
-
-**Development Milestones:**
-1. Architecture design and technology selection
-2. FastAPI backend with SQLAlchemy ORM
-3. Database modeling (User and Post entities)
-4. Authentication system implementation
-5. Frontend integration with responsive design
-6. Render.com deployment configuration
-7. Testing and documentation
+---
 
 ## 📦 API Endpoints
-**Authentication:**
-- POST /api/auth/register - User registration
-- POST /api/auth/login - User login
-- GET /api/auth/me - Get current user
-- PUT /api/auth/profile - Update user profile
 
-**Post Management:**
-- GET /api/posts - Get all posts
-- POST /api/posts - Create new post
-- GET /api/posts/my-posts - Get user's posts
-- GET /api/posts/{id} - Get specific post
-- PUT /api/posts/{id} - Update post
-- DELETE /api/posts/{id} - Delete post
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | User login |
+| GET | `/api/auth/me` | Get current user |
+| PUT | `/api/auth/profile` | Update profile |
+| DELETE | `/api/auth/profile` | Delete account |
 
-**Analytics:**
-- GET /api/dashboard/stats - Platform statistics
-- GET /api/users/{id}/stats - User analytics
+### Post Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/posts` | List all posts |
+| POST | `/api/posts` | Create new post |
+| GET | `/api/posts/my-posts` | Get user's posts |
+| GET | `/api/posts/{id}` | Get specific post |
+| PUT | `/api/posts/{id}` | Update post |
+| DELETE | `/api/posts/{id}` | Delete post |
 
-- 🌍 Deployment
-Render.com Configuration:
+### Analytics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/dashboard/stats` | Platform statistics |
+| GET | `/api/users/{id}/stats` | User statistics |
 
-Auto-deploy from GitHub main branch
+### GraphQL
+| Operation | Type | Description |
+|-----------|------|-------------|
+| `posts` | Query | Fetch all posts |
+| `createPost` | Mutation | Create new post |
 
-Managed PostgreSQL database
+---
 
-Python 3.11 runtime
+## 🚀 Quick Start
 
-Start Command: python main.py
+### Prerequisites
+- Python 3.11+
+- pip
 
-🤖 AI Development Insights
-AI Contributions: Code generation, debugging, dependency management, optimization, documentation
-Human Oversight: Architecture decisions, security implementations, deployment strategy, code quality
+### Installation
 
-📈 Performance Features
-⚡ FastAPI for high-performance async operations
+```bash
+# Clone the repository
+git clone https://github.com/MarceloAdan73/Modern-Blog.git
+cd Modern-Blog
 
-🗃️ SQLAlchemy for efficient database operations
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-🔒 Werkzeug Security for password hashing
+# Install dependencies
+pip install -r requirements.txt
 
-🌐 CORS Enabled for cross-origin requests
+# Run the application
+python main.py
+```
 
-📱 Responsive Design for all devices
+The application will be available at `http://localhost:10000`
 
-👨‍💻 Developer  
+### Demo Credentials
+- **Username:** `user`
+- **Password:** `123456`
+
+---
+
+## 🌍 Deployment
+
+### Render.com Configuration
+- **Auto-deploy** from GitHub
+- **Start Command:** `python main.py`
+- **Environment:** Python 3.11
+- **Database:** Managed PostgreSQL
+
+The application automatically detects PostgreSQL connection strings and switches from SQLite accordingly.
+
+---
+
+## 👨‍💻 Developer
+
 **Marcelo**  
-[View GitHub Profile](https://github.com/MarceloAdan73)
+[GitHub Profile](https://github.com/MarceloAdan73)
 
-"This project showcases how AI can accelerate development while maintaining code quality and architectural integrity."
+---
+
+*"This project showcases how AI can accelerate development while maintaining code quality and architectural integrity."*
 
 ⭐ Star this repo if you found it helpful!
 
-🚀 Live Demo | 📚 API Docs
+🚀 [Live Demo](https://modern-blog-tkzl.onrender.com/) | 📚 [API Docs](https://modern-blog-tkzl.onrender.com/docs)
