@@ -25,6 +25,8 @@ class Post(Base):
     excerpt = Column(String, nullable=True)
     author_id = Column(Integer, ForeignKey("users.id"))
     author_name = Column(String)
+    status = Column(String(50), default="Published")
+    tags = Column(String, default="[]")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

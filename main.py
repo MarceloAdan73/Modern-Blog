@@ -13,10 +13,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy import func
 
+# GraphQL imports
+from strawberry.fastapi import GraphQLRouter
+from graphql_schema import schema
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Modern Blog", version="1.0")
+
+# GraphQL router
+graphql_app = GraphQLRouter(schema)
+app.include_router(graphql_app, prefix="/graphql")
 
 # CORS
 app.add_middleware(
