@@ -2,7 +2,7 @@
 
 > **Developed with AI Assistance** 🤖 + **Human Expertise** 👨‍💻
 
-A full-stack blogging platform built with **FastAPI** for the backend and **Vue 3** for a modern reactive frontend, featuring a stunning glassmorphism UI with dark/light theme support.
+A full-stack blogging platform built with **FastAPI** for the backend and **Vue 3** for a modern reactive frontend, featuring a stunning glassmorphism UI with dark/light theme support and an integrated **GraphQL Explorer**.
 
 ---
 
@@ -31,7 +31,8 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 
 ### API & Backend
 - **REST API** - Full CRUD operations with FastAPI
-- **GraphQL API** - Alternative query interface with Strawberry
+- **GraphQL API** - Complete query interface with Strawberry (CRUD operations)
+- **GraphQL Explorer** - Interactive query builder in the frontend
 - **PostgreSQL/SQLite** - Seamless database switching (dev to prod)
 - **Swagger Documentation** - Auto-generated API docs
 
@@ -42,6 +43,7 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 - **📱 Fully Responsive** - Optimized for desktop, tablet, and mobile
 - **🔔 Toast Notifications** - Non-intrusive feedback system
 - **⬆️ Scroll to Top** - Floating navigation button
+- **📋 Demo Content** - Pre-loaded sample posts when database is empty
 
 ---
 
@@ -53,7 +55,7 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 | Framework | FastAPI | 0.100.0 |
 | ORM | SQLAlchemy | 1.4.46 |
 | Server | Uvicorn | 0.23.2 |
-| GraphQL | Strawberry | - |
+| GraphQL | Strawberry | Latest |
 | Validation | Pydantic | (bundled) |
 | Security | Werkzeug | 2.3.7 |
 | Runtime | Python | 3.11.9 |
@@ -80,7 +82,7 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 modern-blog/
 ├── main.py              # FastAPI application entry point
 ├── database.py          # Database configuration
-├── graphql_schema.py    # Strawberry GraphQL schema
+├── graphql_schema.py    # Strawberry GraphQL schema (CRUD)
 ├── requirements.txt     # Python dependencies
 ├── runtime.txt          # Python version (3.11.9)
 ├── .env                 # Environment variables
@@ -123,11 +125,87 @@ modern-blog/
 | GET | `/api/dashboard/stats` | Platform statistics |
 | GET | `/api/users/{id}/stats` | User statistics |
 
-### GraphQL
-| Operation | Type | Description |
-|-----------|------|-------------|
-| `posts` | Query | Fetch all posts |
-| `createPost` | Mutation | Create new post |
+---
+
+## 🔷 GraphQL API
+
+### Endpoint
+- **URL:** `/graphql`
+
+### Queries
+| Operation | Description |
+|-----------|-------------|
+| `posts` | Fetch all posts (sorted by date) |
+
+### Mutations
+| Operation | Description |
+|-----------|-------------|
+| `createPost` | Create a new post |
+| `updatePost` | Update an existing post |
+| `deletePost` | Delete a post |
+
+### Example Query
+```graphql
+{
+  posts {
+    id
+    title
+    content
+    excerpt
+    status
+    authorName
+    createdAt
+    tags
+  }
+}
+```
+
+### Example Mutation (Create Post)
+```graphql
+mutation {
+  createPost(postData: {
+    title: "My New Post"
+    content: "Post content here..."
+    excerpt: "Brief description"
+    status: "Published"
+    tags: "[\"tech\", \"news\"]"
+    authorName: "John Doe"
+  }) {
+    id
+    title
+    status
+    createdAt
+  }
+}
+```
+
+### Example Mutation (Update Post)
+```graphql
+mutation {
+  updatePost(id: 1, postData: {
+    title: "Updated Title"
+    status: "Published"
+  }) {
+    id
+    title
+    status
+  }
+}
+```
+
+### Example Mutation (Delete Post)
+```graphql
+mutation {
+  deletePost(id: 1)
+}
+```
+
+### GraphQL Explorer
+The frontend includes an interactive **GraphQL Explorer** accessible from the Dashboard Metrics panel after login. Features:
+- Query editor with syntax highlighting
+- Variables input (JSON format)
+- Real-time result display
+- Pre-loaded example queries
 
 ---
 
@@ -186,4 +264,4 @@ The application automatically detects PostgreSQL connection strings and switches
 
 ⭐ Star this repo if you found it helpful!
 
-🚀 [Live Demo](https://modern-blog-tkzl.onrender.com/) | 📚 [API Docs](https://modern-blog-tkzl.onrender.com/docs)
+🚀 [Live Demo](https://modern-blog-tkzl.onrender.com/) | 📚 [API Docs](https://modern-blog-tkzl.onrender.com/docs) | 🔷 [GraphQL](https://modern-blog-tkzl.onrender.com/graphql)
