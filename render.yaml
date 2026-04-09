@@ -1,0 +1,8 @@
+database:
+  type: psql
+
+buildCommand: pip install --no-cache-dir -r requirements.txt
+
+pythonVersion: "3.11"
+
+startCommand: python main.py

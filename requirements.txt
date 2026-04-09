@@ -3,5 +3,6 @@ uvicorn==0.23.2
 sqlalchemy==1.4.46
 werkzeug==2.3.7
 python-multipart==0.0.6
-strawberry-graphql[fastapi]>=0.200.0
+strawberry-graphql[fastapi]==0.260.2
+strawberry-graphql==0.260.2
 psycopg2-binary==2.9.7
