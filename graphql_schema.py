@@ -1,8 +1,41 @@
 import strawberry
 from typing import List, Optional
 from datetime import datetime
+from graphql import GraphQLError
 from database import SessionLocal
-from models.models import Post
+from models.models import Post, User
+from security import decode_access_token, get_current_request
+
+
+def _auth_user(request) -> Optional[User]:
+    """Lee el Bearer token del header y devuelve el User (o None)."""
+    if request is None:
+        return None
+
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+
+    user_id = decode_access_token(auth_header[7:])
+    if user_id is None:
+        return None
+
+    db = SessionLocal()
+    try:
+        return db.query(User).filter(User.id == user_id).first()
+    finally:
+        db.close()
+
+
+def get_graphql_context():
+    """Contexto GraphQL: expone el usuario autenticado (si hay).
+
+    IMPORTANTE: NO recibe argumentos (bug de strawberry 0.324: un
+    context_getter con parametro request rompe la validacion del body).
+    La request se lee de la contextvar capturada por el middleware.
+    """
+    request = get_current_request()
+    return {"request": request, "user": _auth_user(request)}
 
 
 @strawberry.type
@@ -73,7 +106,11 @@ class PostUpdateInput:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_post(self, post_data: PostInput) -> PostType:
+    def create_post(self, post_data: PostInput, info: strawberry.Info) -> PostType:
+        user = info.context["user"]
+        if not user:
+            raise GraphQLError("Not authenticated")
+
         db = SessionLocal()
         try:
             new_post = Post(
@@ -82,7 +119,8 @@ class Mutation:
                 excerpt=post_data.excerpt,
                 status=post_data.status,
                 tags=post_data.tags,
-                author_name=post_data.author_name,
+                author_id=user.id,
+                author_name=user.full_name or user.username,
                 created_at=datetime.now(),
             )
             db.add(new_post)
@@ -103,12 +141,20 @@ class Mutation:
             db.close()
 
     @strawberry.mutation
-    def update_post(self, id: int, post_data: PostUpdateInput) -> Optional[PostType]:
+    def update_post(
+        self, id: int, post_data: PostUpdateInput, info: strawberry.Info
+    ) -> Optional[PostType]:
+        user = info.context["user"]
+        if not user:
+            raise GraphQLError("Not authenticated")
+
         db = SessionLocal()
         try:
             db_post = db.query(Post).filter(Post.id == id).first()
             if not db_post:
                 return None
+            if db_post.author_id != user.id:
+                raise GraphQLError("You can only edit your own posts")
 
             if post_data.title is not None:
                 db_post.title = post_data.title
@@ -139,12 +185,18 @@ class Mutation:
             db.close()
 
     @strawberry.mutation
-    def delete_post(self, id: int) -> bool:
+    def delete_post(self, id: int, info: strawberry.Info) -> bool:
+        user = info.context["user"]
+        if not user:
+            raise GraphQLError("Not authenticated")
+
         db = SessionLocal()
         try:
             db_post = db.query(Post).filter(Post.id == id).first()
             if not db_post:
                 return False
+            if db_post.author_id != user.id:
+                raise GraphQLError("You can only delete your own posts")
 
             db.delete(db_post)
             db.commit()

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
 
-from database import engine, SessionLocal
+from database import engine, get_db, SessionLocal
 from models.models import Base, User, Post
 from models.schemas import (
     UserCreate,
@@ -16,28 +16,81 @@ from models.schemas import (
     PostResponse,
     UserUpdate,
 )
+from security import (
+    create_access_token,
+    get_current_user,
+    set_current_request,
+    reset_current_request,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy import func
 
 # GraphQL imports
 from strawberry.fastapi import GraphQLRouter
-from graphql_schema import schema
+from graphql_schema import schema, get_graphql_context
 
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+
+def seed_demo_user():
+    """Crea el usuario demo user/123456 si no existe y asigna los posts
+    huerfanos (author_id NULL, creados antes de la auth real) a ese usuario.
+    Asi el flujo demo funciona igual en local (SQLite) y en produccion."""
+    db = SessionLocal()
+    try:
+        demo_user = db.query(User).filter(User.username == "user").first()
+        if not demo_user:
+            demo_user = User(
+                username="user",
+                email="user@example.com",
+                full_name="John Doe (Demo User)",
+                hashed_password=generate_password_hash("123456"),
+            )
+            db.add(demo_user)
+            db.flush()
+
+        # Migracion: posts legacy sin dueno -> usuario demo
+        db.query(Post).filter(Post.author_id.is_(None)).update(
+            {
+                Post.author_id: demo_user.id,
+                Post.author_name: demo_user.full_name or demo_user.username,
+            }
+        )
+        db.commit()
+    finally:
+        db.close()
+
+
+seed_demo_user()
+
 app = FastAPI(title="Modern Blog", version="1.0")
 
-# GraphQL router con GraphiQL
-graphql_app = GraphQLRouter(schema, graphql_ide="graphiql")
+
+@app.middleware("http")
+async def capture_current_request(request, call_next):
+    """Guarda la request en una contextvar (la usa el context de GraphQL)."""
+    token = set_current_request(request)
+    try:
+        return await call_next(request)
+    finally:
+        reset_current_request(token)
+
+
+# GraphQL router con GraphiQL (context con auth para las mutations)
+graphql_app = GraphQLRouter(schema, graphql_ide="graphiql", context_getter=get_graphql_context)
 app.include_router(graphql_app, prefix="/graphql")
 
-# CORS
+# CORS restringido: solo la demo de Render (same-origin en local).
+# Sin credentials: la auth es via header Authorization Bearer, no cookies.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "https://modern-blog-tkzl.onrender.com",
+        "http://localhost:10000",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -48,14 +101,6 @@ os.makedirs("static", exist_ok=True)
 
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # ==================== FRONTEND ====================
@@ -95,7 +140,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     return {
-        "access_token": "mock-token",
+        "access_token": create_access_token(db_user.id),
         "token_type": "bearer",
         "user": {
             "id": db_user.id,
@@ -114,29 +159,29 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 @app.get("/api/auth/me")
-def get_current_user(db: Session = Depends(get_db)):
-    # In real app use JWT, here we use first user
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+def get_current_user_endpoint(current_user: User = Depends(get_current_user)):
+    db_user = current_user
 
     return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "full_name": user.full_name,
-        "profile_picture": user.profile_picture,
-        "bio": user.bio,
-        "location": user.location,
-        "website": user.website,
-        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "id": db_user.id,
+        "username": db_user.username,
+        "email": db_user.email,
+        "full_name": db_user.full_name,
+        "profile_picture": db_user.profile_picture,
+        "bio": db_user.bio,
+        "location": db_user.location,
+        "website": db_user.website,
+        "created_at": db_user.created_at.isoformat() if db_user.created_at else None,
     }
 
 
 @app.put("/api/auth/profile", response_model=UserResponse)
-def update_profile(user_update: UserUpdate, db: Session = Depends(get_db)):
-    # In real app use JWT, here we use first user
-    db_user = db.query(User).first()
+def update_profile(
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_user = db.query(User).filter(User.id == current_user.id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -160,9 +205,11 @@ def update_profile(user_update: UserUpdate, db: Session = Depends(get_db)):
 
 
 @app.delete("/api/auth/profile")
-def delete_profile(db: Session = Depends(get_db)):
-    # In real app use JWT, here we use first user
-    db_user = db.query(User).first()
+def delete_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_user = db.query(User).filter(User.id == current_user.id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -181,45 +228,42 @@ def delete_profile(db: Session = Depends(get_db)):
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(Post).order_by(Post.created_at.desc()).all()
 
-    # Add info if it's from current user (mock)
-    # TEMPORARY FIX: Mark all as NOT owner until proper auth is implemented
+    # Mark as NOT owned (public listing; ownership requires auth)
     for post in posts:
-        post.is_owner = False  # Temporary fix for security
+        post.is_owner = False
 
     return posts
 
 
 @app.post("/api/posts", response_model=PostResponse)
-def create_post(post: PostCreate, db: Session = Depends(get_db)):
-    # In real app use JWT, here we use first user
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
+def create_post(
+    post: PostCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     db_post = Post(
         title=post.title,
         content=post.content,
         excerpt=post.excerpt,
-        author_id=user.id,
-        author_name=user.full_name or user.username,
+        author_id=current_user.id,
+        author_name=current_user.full_name or current_user.username,
     )
 
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
+    db_post.is_owner = True
     return db_post
 
 
 @app.get("/api/posts/my-posts", response_model=List[PostResponse])
-def get_my_posts(db: Session = Depends(get_db)):
-    # In real app filter by authenticated user
-    user = db.query(User).first()
-    if not user:
-        return []
-
+def get_my_posts(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     posts = (
         db.query(Post)
-        .filter(Post.author_id == user.id)
+        .filter(Post.author_id == current_user.id)
         .order_by(Post.created_at.desc())
         .all()
     )
@@ -237,17 +281,26 @@ def get_post(post_id: int, db: Session = Depends(get_db)):
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    # Mark as NOT owned (temporary security fix)
+    # Mark as NOT owned (ownership requires auth)
     post.is_owner = False
 
     return post
 
 
 @app.put("/api/posts/{post_id}", response_model=PostResponse)
-def update_post(post_id: int, post: PostCreate, db: Session = Depends(get_db)):
+def update_post(
+    post_id: int,
+    post: PostCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     db_post = db.query(Post).filter(Post.id == post_id).first()
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
+    if db_post.author_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="You can only edit your own posts"
+        )
 
     db_post.title = post.title
     db_post.content = post.content
@@ -256,14 +309,23 @@ def update_post(post_id: int, post: PostCreate, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(db_post)
+    db_post.is_owner = True
     return db_post
 
 
 @app.delete("/api/posts/{post_id}")
-def delete_post(post_id: int, db: Session = Depends(get_db)):
+def delete_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     db_post = db.query(Post).filter(Post.id == post_id).first()
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
+    if db_post.author_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="You can only delete your own posts"
+        )
 
     db.delete(db_post)
     db.commit()

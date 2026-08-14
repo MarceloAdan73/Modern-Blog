@@ -18,3 +18,12 @@ else:
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+
+def get_db():
+    """FastAPI dependency: abre una sesion y la cierra al terminar la request."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
