@@ -52,6 +52,9 @@ blog.db
 *.log
 *.sqlite3
 
+# Config local de opencode (agente + plan del proyecto - NO se pushea)
+.opencode/
+
 # Archivos de IDE
 .vscode/
 .idea/
