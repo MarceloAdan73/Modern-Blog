@@ -1194,7 +1194,7 @@
                     try {
                         const response = await fetch('/graphql', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json', ...authHeaders() },
                             body: JSON.stringify({
                                 query: `
                                     mutation CreatePost($postData: PostInput!) {
@@ -1254,7 +1254,7 @@
                     try {
                         const response = await fetch('/graphql', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json', ...authHeaders() },
                             body: JSON.stringify({
                                 query: `
                                     mutation UpdatePost($id: Int!, $postData: PostUpdateInput!) {
@@ -1317,7 +1317,7 @@
                     try {
                         const response = await fetch('/graphql', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json', ...authHeaders() },
                             body: JSON.stringify({
                                 query: `
                                     mutation DeletePost($id: Int!) {
@@ -1344,33 +1344,50 @@
 
                 // --- AUTH LOGIC (kept mock for demo) ---
 
+                const authHeaders = () => {
+                    const token = localStorage.getItem('token');
+                    return token ? { 'Authorization': `Bearer ${token}` } : {};
+                };
+
                 const handleLogin = async () => {
                     loading.value = true;
                     error.value = null;
 
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    try {
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username: loginForm.value.username,
+                                password: loginForm.value.password,
+                            }),
+                        });
 
-                    const foundUser = [
-                        { id: 1, username: 'user', password: '123456', full_name: 'John Doe (Demo User)' },
-                    ].find(u => u.username === loginForm.value.username && u.password === loginForm.value.password);
-
-                    if (foundUser) {
-                        user.value = foundUser;
-                        localStorage.setItem('user', JSON.stringify(foundUser));
-                        closeLogin();
-                        addNotification(`Welcome back, ${foundUser.full_name.split(' ')[0]}!`, 'success');
-                        fetchPosts();
-                    } else {
-                        error.value = 'Invalid username or password.';
-                        addNotification('Login failed: Invalid credentials.', 'error');
+                        if (!response.ok) {
+                            const data = await response.json().catch(() => ({}));
+                            error.value = data.detail || 'Invalid username or password.';
+                            addNotification('Login failed: Invalid credentials.', 'error');
+                        } else {
+                            const data = await response.json();
+                            user.value = data.user;
+                            localStorage.setItem('user', JSON.stringify(data.user));
+                            localStorage.setItem('token', data.access_token);
+                            closeLogin();
+                            addNotification(`Welcome back, ${data.user.full_name.split(' ')[0]}!`, 'success');
+                            fetchPosts();
+                        }
+                    } catch (err) {
+                        error.value = 'Connection error. Please try again.';
+                        addNotification('Login failed: connection error.', 'error');
+                    } finally {
+                        loading.value = false;
                     }
-
-                    loading.value = false;
                 };
 
                 const logout = () => {
                     user.value = null;
                     localStorage.removeItem('user');
+                    localStorage.removeItem('token');
                     loginForm.value = { username: '', password: '' };
                     addNotification('You have been logged out successfully.', 'info');
                     fetchPosts(); // Refresh posts (shows only published)
