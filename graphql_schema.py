@@ -91,7 +91,11 @@ class PostInput:
     excerpt: Optional[str] = ""
     status: Optional[str] = "Published"
     tags: Optional[str] = "[]"
-    author_name: str
+    # Campo legacy del schema viejo: NO se usa (el autor sale del token
+    # autenticado en create_post). Se mantiene opcional para no romper
+    # clientes que ya lo envian (la UI lo manda) y para no exigirlo
+    # a clientes nuevos.
+    author_name: Optional[str] = None
 
 
 @strawberry.input
