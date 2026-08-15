@@ -15,7 +15,7 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 
 ## 🌐 Live Application
 
-> **Deploy status:** [![Deploy](https://img.shields.io/website?url=https%3A%2F%2Fmodern-blog-tkzl.onrender.com&label=deploy&up_message=up&down_message=down)](https://modern-blog-tkzl.onrender.com)
+> **Status:** [![CI](https://github.com/MarceloAdan73/Modern-Blog/actions/workflows/ci.yml/badge.svg)](https://github.com/MarceloAdan73/Modern-Blog/actions/workflows/ci.yml) [![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-2ecc71?style=for-the-badge)](https://modern-blog-tkzl.onrender.com/) [![API Docs](https://img.shields.io/badge/API%20Docs-Open-3498db?style=for-the-badge)](https://modern-blog-tkzl.onrender.com/docs)
 > *Note: Render free tier sleeps after ~15 minutes of inactivity. The first request can take 15-30s (cold start); don't confuse this with an outage.*
 
 | Service | URL |
@@ -111,6 +111,8 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 | Build Command | `pip install -r requirements.txt` |
 | Start Command | `python main.py` |
 | Auto-deploy | GitHub integration |
+| CI | GitHub Actions (pytest) |
+| Keep-alive | GitHub Actions cron (every 4 min) |
 
 ---
 
@@ -303,6 +305,9 @@ The application automatically detects PostgreSQL connection strings and switches
 | Interactive GraphQL Explorer | ✅ Complete |
 | Render.com deployment | ✅ Complete |
 | Real-time search | ✅ Complete |
+| Automated tests (pytest) | ✅ Complete |
+| CI/CD with GitHub Actions | ✅ Complete |
+| Health endpoint (`/health`) | ✅ Complete |
 
 ---
 

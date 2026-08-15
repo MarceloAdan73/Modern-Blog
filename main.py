@@ -24,7 +24,7 @@ from security import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 # GraphQL imports
 from strawberry.fastapi import GraphQLRouter
@@ -107,6 +107,26 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def read_index():
     return FileResponse("templates/index.html")
+
+
+# ==================== HEALTH CHECK ====================
+@app.get("/health")
+def health_check(db: Session = Depends(get_db)):
+    db_status = "connected"
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception:
+        db_status = "error"
+
+    return {
+        "success": db_status == "connected",
+        "status": "healthy" if db_status == "connected" else "degraded",
+        "message": "Modern Blog API is running",
+        "timestamp": datetime.utcnow().isoformat(),
+        "environment": "production" if os.environ.get("RENDER") else "development",
+        "version": app.version,
+        "database": db_status,
+    }
 
 
 # ==================== AUTH ENDPOINTS ====================
