@@ -16,7 +16,7 @@ A full-stack blogging platform built with **FastAPI** for the backend and **Vue 
 ## 🌐 Live Application
 
 > **Deploy status:** [![Deploy](https://img.shields.io/website?url=https%3A%2F%2Fmodern-blog-tkzl.onrender.com&label=deploy&up_message=up&down_message=down)](https://modern-blog-tkzl.onrender.com)
-> *Nota: Render free duerme tras ~15 min de inactividad. El primer acceso tarda 15-30s (cold start); no confundir con caida.*
+> *Note: Render free tier sleeps after ~15 minutes of inactivity. The first request can take 15-30s (cold start); don't confuse this with an outage.*
 
 | Service | URL |
 |---------|-----|
